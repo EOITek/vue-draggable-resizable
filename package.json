@@ -2,13 +2,9 @@
   "name": "vue-draggable-resizable",
   "version": "2.3.0",
   "author": "Maurizio Bonani <maurizio.bonani@gmail.com>",
-  "main": "dist/VueDraggableResizable.umd.min.js",
-  "unpkg": "dist/VueDraggableResizable.umd.min.js",
-  "browser": {
-    "./sfc": "src/vue-draggable-resizable.vue"
-  },
+  "main": "src/components/vue-draggable-resizable.vue",
   "private": false,
-  "description": "Vue2 Component for resizable and draggable elements",
+  "description": "Vue Component for resizable and draggable elements",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -87,5 +83,8 @@
     "component",
     "dragabble",
     "resizable"
-  ]
+  ],
+  "dependencies": {
+    "resize-observer-polyfill": "^1.5.1"
+  }
 }

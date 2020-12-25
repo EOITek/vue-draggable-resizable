@@ -29,6 +29,8 @@
 <style scoped src="./vue-draggable-resizable.css"></style>
 
 <script>
+import ResizeObserver from 'resize-observer-polyfill'
+
 import { matchesSelectorToParentElements, getComputedSize, addEvent, removeEvent } from '../utils/dom'
 import { computeWidth, computeHeight, restrictToBounds, snapToGrid } from '../utils/fns'
 
@@ -301,7 +303,15 @@ export default {
     addEvent(document.documentElement, 'touchend', this.deselect)
     addEvent(document.documentElement, 'touchcancel', this.deselect)
 
-    addEvent(window, 'resize', this.checkParentSize)
+    if (this.parent) {
+      this.ro = new ResizeObserver(([entry]) => {
+        this.parentWidth = entry.contentRect.width
+        this.parentHeight = entry.contentRect.height
+        this.right = this.parentWidth - this.width - this.left
+        this.bottom = this.parentHeight - this.height - this.top
+      })
+      this.ro.observe(this.$el.parentElement)
+    }
   },
   beforeDestroy () {
     this.cleanUp()
@@ -320,7 +330,7 @@ export default {
       removeEvent(document.documentElement, 'touchend', this.deselect)
       removeEvent(document.documentElement, 'touchcancel', this.deselect)
 
-      removeEvent(window, 'resize', this.checkParentSize)
+      if (this.ro) this.ro.disconnect()
     },
     resetBoundsAndMouseState () {
       this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0 }
@@ -336,19 +346,9 @@ export default {
         maxBottom: null
       }
     },
-    checkParentSize () {
-      if (this.parent) {
-        const [newParentWidth, newParentHeight] = this.getParentSize()
-
-        this.parentWidth = newParentWidth
-        this.parentHeight = newParentHeight
-        this.right = this.parentWidth - this.width - this.left
-        this.bottom = this.parentHeight - this.height - this.top
-      }
-    },
     getParentSize () {
       if (this.parent) {
-        const style = window.getComputedStyle(this.$el.parentNode, null)
+        const style = window.getComputedStyle(this.$el.parentElement, null)
 
         return [
           parseFloat(style.getPropertyValue('width')),

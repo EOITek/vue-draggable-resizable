@@ -29,7 +29,7 @@ describe('Basic', function () {
     expect(wrapper.findAll('div.handle').length).to.equal(8)
   })
 
-  it('should provide named slots for each one of the hanldes', function () {
+  it('should provide named slots for each one of the handles', function () {
     wrapper = mount(VueDraggableResizable, {
       slots: {
         tl: '<span>TL</span>',
@@ -42,15 +42,15 @@ describe('Basic', function () {
         ml: '<span>ML</span>'
       }
     })
-
-    expect(wrapper.find('div.handle-tl').html()).to.contain('<span>TL</span>')
-    expect(wrapper.find('div.handle-tm').html()).to.contain('<span>TM</span>')
-    expect(wrapper.find('div.handle-tr').html()).to.contain('<span>TR</span>')
-    expect(wrapper.find('div.handle-mr').html()).to.contain('<span>MR</span>')
-    expect(wrapper.find('div.handle-br').html()).to.contain('<span>BR</span>')
-    expect(wrapper.find('div.handle-bm').html()).to.contain('<span>BM</span>')
-    expect(wrapper.find('div.handle-bl').html()).to.contain('<span>BL</span>')
-    expect(wrapper.find('div.handle-ml').html()).to.contain('<span>ML</span>')
+    // Vue inserts extra `data-` attributes because we use scoped CSS
+    expect(wrapper.find('div.handle-tl').html()).to.contain('>TL</span>')
+    expect(wrapper.find('div.handle-tm').html()).to.contain('>TM</span>')
+    expect(wrapper.find('div.handle-tr').html()).to.contain('>TR</span>')
+    expect(wrapper.find('div.handle-mr').html()).to.contain('>MR</span>')
+    expect(wrapper.find('div.handle-br').html()).to.contain('>BR</span>')
+    expect(wrapper.find('div.handle-bm').html()).to.contain('>BM</span>')
+    expect(wrapper.find('div.handle-bl').html()).to.contain('>BL</span>')
+    expect(wrapper.find('div.handle-ml').html()).to.contain('>ML</span>')
   })
 
   it('should not block event bubbling', function (done) {

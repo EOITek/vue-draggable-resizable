@@ -6,7 +6,8 @@
       [classNameDragging]: dragging,
       [classNameResizing]: resizing,
       [classNameDraggable]: draggable,
-      [classNameResizable]: resizable
+      [classNameResizable]: resizable,
+      'user-select-none': dragging && disableUserSelect,
     }, className]"
     @mousedown="elementMouseDown"
     @touchstart="elementTouchDown"
@@ -25,6 +26,8 @@
   </div>
 </template>
 
+<style scoped src="./vue-draggable-resizable.css"></style>
+
 <script>
 import { matchesSelectorToParentElements, getComputedSize, addEvent, removeEvent } from '../utils/dom'
 import { computeWidth, computeHeight, restrictToBounds, snapToGrid } from '../utils/fns'
@@ -40,20 +43,6 @@ const events = {
     move: 'touchmove',
     stop: 'touchend'
   }
-}
-
-const userSelectNone = {
-  userSelect: 'none',
-  MozUserSelect: 'none',
-  WebkitUserSelect: 'none',
-  MsUserSelect: 'none'
-}
-
-const userSelectAuto = {
-  userSelect: 'auto',
-  MozUserSelect: 'auto',
-  WebkitUserSelect: 'auto',
-  MsUserSelect: 'auto'
 }
 
 let eventsFor = events.mouse
@@ -232,7 +221,17 @@ export default {
     }
   },
 
-  data: function () {
+  emits: [
+    'activated',
+    'update:active',
+    'deactivated',
+    'dragging',
+    'resizing',
+    'resizestop',
+    'dragstop'
+  ],
+
+  data () {
     return {
       left: this.x,
       top: this.y,
@@ -266,7 +265,7 @@ export default {
     }
   },
 
-  created: function () {
+  created () {
     // eslint-disable-next-line
     if (this.maxWidth && this.minWidth > this.maxWidth) console.warn('[Vdr warn]: Invalid prop: minWidth cannot be greater than maxWidth')
     // eslint-disable-next-line
@@ -274,9 +273,9 @@ export default {
 
     this.resetBoundsAndMouseState()
   },
-  mounted: function () {
+  mounted () {
     if (!this.enableNativeDrag) {
-      this.$el.ondragstart = () => false
+      this.$el.ondragstart = e => e.preventDefault()
     }
 
     const [parentWidth, parentHeight] = this.getParentSize()
@@ -299,22 +298,30 @@ export default {
     }
 
     addEvent(document.documentElement, 'mousedown', this.deselect)
-    addEvent(document.documentElement, 'touchend touchcancel', this.deselect)
+    addEvent(document.documentElement, 'touchend', this.deselect)
+    addEvent(document.documentElement, 'touchcancel', this.deselect)
 
     addEvent(window, 'resize', this.checkParentSize)
   },
-  beforeDestroy: function () {
-    removeEvent(document.documentElement, 'mousedown', this.deselect)
-    removeEvent(document.documentElement, 'touchstart', this.handleUp)
-    removeEvent(document.documentElement, 'mousemove', this.move)
-    removeEvent(document.documentElement, 'touchmove', this.move)
-    removeEvent(document.documentElement, 'mouseup', this.handleUp)
-    removeEvent(document.documentElement, 'touchend touchcancel', this.deselect)
-
-    removeEvent(window, 'resize', this.checkParentSize)
+  beforeDestroy () {
+    this.cleanUp()
+  },
+  beforeUnmount () {
+    this.cleanUp()
   },
 
   methods: {
+    cleanUp () {
+      removeEvent(document.documentElement, 'mousedown', this.deselect)
+      removeEvent(document.documentElement, 'touchstart', this.handleUp)
+      removeEvent(document.documentElement, 'mousemove', this.move)
+      removeEvent(document.documentElement, 'touchmove', this.move)
+      removeEvent(document.documentElement, 'mouseup', this.handleUp)
+      removeEvent(document.documentElement, 'touchend', this.deselect)
+      removeEvent(document.documentElement, 'touchcancel', this.deselect)
+
+      removeEvent(window, 'resize', this.checkParentSize)
+    },
     resetBoundsAndMouseState () {
       this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0 }
 
@@ -344,8 +351,8 @@ export default {
         const style = window.getComputedStyle(this.$el.parentNode, null)
 
         return [
-          parseInt(style.getPropertyValue('width'), 10),
-          parseInt(style.getPropertyValue('height'), 10)
+          parseFloat(style.getPropertyValue('width')),
+          parseFloat(style.getPropertyValue('height'))
         ]
       }
 
@@ -720,7 +727,7 @@ export default {
       // should calculate with scale 1.
       const [newWidth, _] = snapToGrid(this.grid, val, 0, 1)
 
-      let right = restrictToBounds(
+      const right = restrictToBounds(
         (this.parentWidth - newWidth - this.left),
         this.bounds.minRight,
         this.bounds.maxRight
@@ -741,9 +748,9 @@ export default {
     },
     changeHeight (val) {
       // should calculate with scale 1.
-      const [_, newHeight] = snapToGrid(this.grid, 0, val, 1)
+      const [, newHeight] = snapToGrid(this.grid, 0, val, 1)
 
-      let bottom = restrictToBounds(
+      const bottom = restrictToBounds(
         (this.parentHeight - newHeight - this.top),
         this.bounds.minBottom,
         this.bounds.maxBottom
@@ -789,8 +796,7 @@ export default {
         transform: `translate(${this.left}px, ${this.top}px)`,
         width: this.computedWidth,
         height: this.computedHeight,
-        zIndex: this.zIndex,
-        ...(this.dragging && this.disableUserSelect ? userSelectNone : userSelectAuto)
+        zIndex: this.zIndex
       }
     },
     actualHandles () {

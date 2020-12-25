@@ -10,7 +10,6 @@
 
 <script>
 import VueDraggableResizable from './components/vue-draggable-resizable'
-import './components/vue-draggable-resizable.css'
 
 export default {
   name: 'app',

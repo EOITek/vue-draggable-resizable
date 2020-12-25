@@ -1,5 +1,5 @@
 export function isFunction (func) {
-  return (typeof func === 'function' || Object.prototype.toString.call(func) === '[object Function]')
+  return typeof func === 'function'
 }
 
 export function snapToGrid (grid, pendingX, pendingY, scale = 1) {
@@ -13,8 +13,8 @@ export function getSize (el) {
   const rect = el.getBoundingClientRect()
 
   return [
-    parseInt(rect.width),
-    parseInt(rect.height)
+    rect.width,
+    rect.height
   ]
 }
 

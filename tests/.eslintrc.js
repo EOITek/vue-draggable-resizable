@@ -3,8 +3,8 @@ module.exports = {
     mocha: true
   },
   globals: {
-    'expect': true,
-    'sinon': true
+    expect: true,
+    sinon: true
   },
   parserOptions: {
     parser: 'babel-eslint'

@@ -1,7 +1,3 @@
-export function isFunction (func) {
-  return typeof func === 'function'
-}
-
 export function snapToGrid (grid, pendingX, pendingY, scale = 1) {
   const [scaleX, scaleY] = typeof scale === 'number' ? [scale, scale] : scale
   const x = Math.round((pendingX / scaleX) / grid[0]) * grid[0]
